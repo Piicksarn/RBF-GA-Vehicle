@@ -1,125 +1,58 @@
-var Line = function(index) {
-  this.distance = 0;
+function Line(index) {
   this.index = index;
-  this.car_surface = math.zeros(2);
+  this.distance = 0;
   this.end = math.zeros(2);
-  this.homoMatrix = math.zeros(3,3);
-  this.vecMatrix = math.zeros(3);
-  this.resultMatrix = math.zeros(3,3);
-
-  // The items in the list are indicate as far, median, close
-  this.rankList = new Array(3);
-  for (var i in this.rankList) {
-    this.rankList[i] = new Fuzzifier();
-  }
+  this.start = math.zeros(2);
+  this.surface = math.zeros(2);
 }
 Line.prototype = {
-  setRank: function() {
-    for (var i in this.rankList) {
-      this.rankList[i].setDist(this.getDist());
-      this.rankList[i].setRank(i);
-    }
+  setEnd: function(end) {
+    this.end = end;
   },
-  getRankList: function() {
-    return this.rankList;
+  setDist: function(dist) {
+    this.distance = dist;
+  },
+  getIndex: function() {
+    return this.index;
+  },
+  setStart: function(point) {
+    this.start = point;
   },
   getDist: function() {
     return this.distance;
   },
-  getStart: function() {
-    return this.index;
-  },
-  getEnd: function() {
-    return this.endPos;
-  },
-  setAngle: function(degree) {
-    this.angle = degree;
-  },
-  drawSurface: function() {
-    var point = paintTran([this.car_surface[0] , this.car_surface[1]]);
-    var Carpoint = paintTran([car_x, car_y]);
+  draw: function() {
+    var surface_onCanvas = mapToCanvas(this.surface[0], this.surface[1]);
+    var cross_onCanvas = mapToCanvas(this.end[0], this.end[1]);
+    var center = mapToCanvas(vehicle.xPosition, vehicle.yPosition);
     // Draw sensor lines
+    ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.moveTo(Carpoint[0], Carpoint[1]);
-    ctx.strokeStyle = "#FFF"
-    ctx.lineTo(point[0] , point[1]);
-    ctx.closePath();
-    ctx.stroke();
-
-    // Draw the surface point
-    ctx.beginPath();
-    ctx.arc(point[0] , point[1], 10, 0, Math.PI*2, true)
-    ctx.fillStyle = "rgba(23, 140, 216, 1)";
-    ctx.closePath();
-    ctx.fill();
-  },
-  drawEnd: function() {
-    // Draw sensor lines
-    var point = paintTran([this.end[0], this.end[1]]);
-    var Surpoint = paintTran([this.car_surface[0], this.car_surface[1]]);
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(Surpoint[0], Surpoint[1]);
-    ctx.strokeStyle = "#FFF"
-    ctx.lineTo(point[0] , point[1]);
+    ctx.moveTo(center[0], center[1]);
+    ctx.strokeStyle = "rgba(236, 90, 80,1)"
+    ctx.lineTo(cross_onCanvas[0], cross_onCanvas[1]);
     ctx.closePath();
     ctx.stroke();
 
     // Draw the end point
     ctx.beginPath();
-    ctx.arc(point[0] , point[1], 10, 0, Math.PI*2, true)
+    ctx.arc(cross_onCanvas[0], cross_onCanvas[1], 10, 0, Math.PI*2, true)
     ctx.fillStyle = "rgba(236, 90, 80,1)";
     ctx.closePath();
     ctx.fill();
-
-    // Draw the end point
     ctx.beginPath();
     ctx.lineWidth = 3;
     ctx.strokeStyle = "rgba(236, 80, 96, 1)";
-    ctx.arc(point[0], point[1], 15, 0, Math.PI*2, true);
+    ctx.arc(cross_onCanvas[0], cross_onCanvas[1], 15, 0, Math.PI*2, true);
     ctx.closePath();
     ctx.stroke();
   },
-  distCal: function() {
-    // Searching the Surface point
-    var point_x = tmpX + RADIUS * math.cos(angle_phi - math.pi / 4 + ((math.pi / 4) * this.index));
-    var point_y = tmpY + RADIUS * math.sin(angle_phi - math.pi / 4 + ((math.pi / 4) * this.index));
-    this.car_surface = [math.round(point_x), math.round(point_y)];
-    // Searching the end point
-    var interList = new Array();
-    for (var i = 0; i < wallList.length; i++) {
-       var intPoint = this.intersect(car_x, car_y, this.car_surface[0], this.car_surface[1], wallList[i]);
-       if(intPoint!=null)
-          interList.push(intPoint);
-     }
-    // Searching the minimal distance intersect point
-    var min = 700;
-    for (var i = 0; i < interList.length; i++) {
-      if(math.distance(interList[i],[car_x, car_y]) < min) {
-        min = math.distance(interList[i],[car_x, car_y]);
-        this.end = interList[i];
-        this.distance = min;
-       }
-    }
+  setSurface: function() {
+    var point_x = vehicle.xPosition + RADIUS / scale * math.cos(ang_phi - math.pi / 4 + ((math.pi / 4) * this.index));
+    var point_y = vehicle.yPosition + RADIUS / scale * math.sin(ang_phi - math.pi / 4 + ((math.pi / 4) * this.index));
+    this.surface = [point_x, point_y];
   },
-  intersect: function (sx, sy, ex, ey, wall) {
-    var result_x = math.round(math.intersect([sx, sy], [ex, ey], wall.getSP(), wall.getEP()))[0];
-    var result_y = math.round(math.intersect([sx, sy], [ex, ey], wall.getSP(), wall.getEP()))[1];
-    if(wall.getStyle() == 'y') {
-        if(this.checkInBound(result_x, wall))
-          if(math.dot([(ex - sx), (ey - sy)], [(result_x - sx), (wall.getLine() - sy)]) > 0)
-            return math.round(math.intersect([sx, sy], [ex, ey], wall.getSP(), wall.getEP()));
-    }
-    else {
-      if(this.checkInBound(result_y, wall))
-         if(math.dot([(ex - sx), (ey - sy)], [(wall.getLine() - sx), (result_y - sy)]) > 0)
-           return math.round(math.intersect([sx, sy], [ex, ey], wall.getSP(), wall.getEP()));
-    }
-    return null;
-  },
-  checkInBound: function(x, wall) {
-    if(x >= wall.getMin() && x <= wall.getMax())
-        return true;
-    return false;
+  getSur: function() {
+    return this.surface;
   }
 }
