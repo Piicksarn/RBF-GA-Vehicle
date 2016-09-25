@@ -1,22 +1,10 @@
+## :smiley: 
 
-## :smiley: Initial Setting
-### Position
+Cause to the security problem with crome, safari or IE,
+the training file might not be load.
 
-  - Use mouse to set the start position. :round_pushpin: 
-  
-  :warning: **Should set the position on the yellow yeild.**
+Please use Firefox.
+Firefox is much more friendly for web programmer. :^D
 
-###Angle and Rate
+Thank u*
 
-  - The menu on the left side could set the initial angle and the moving rate of the vehicle.
-   
-###Result
-
-  - The panel on the right side of the webpage would show the self-propelled result. :blue_car:  :blue_car:  :blue_car: 
-  
-
-
-
-## :facepunch: If you find out any bugs...
- **`It's welcome to send issues!`**
-    [**Click Here!**](https://github.com/Piicksarn/Self-propelled-Vehicle/issues)
